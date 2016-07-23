@@ -44,7 +44,7 @@ def print_stats(log_df):
     '''
     by_date = log_df.groupby('date')
     by_date_useragent = log_df.groupby(['user_agent','date'])
-    by_httpmethod_by_OS_by_day = log_df.groupby(['user_agent','os','date'])
+    by_httpmethod_by_OS_by_day = log_df.groupby(['os','date','http_method'])['http_method'].count()
     total_requests_by_date = by_date['http_method'].count()
     frequent_useragents_by_date = by_date_useragent['user_agent'].count().to_dict().items()
     print "=========== Total Requests by date ============="
@@ -59,7 +59,11 @@ def print_stats(log_df):
     print '=' * 40
 
 
-
+    print by_httpmethod_by_OS_by_day
+    # sum up all Gets by OS by day
+    # sum up all POSTS by OS by day
+    # Calculate ratio of GETS to POSTS
+    # print ratio
 
 def main(arguments):
     with open(arguments['<file>']) as fd:
