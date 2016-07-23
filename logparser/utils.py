@@ -27,12 +27,26 @@ def parse_nginx_log(line):
             'bytes',
             'referrer',
             'user_agent',
-            'http_method'
+            'http_method',
+            'os'
         ]
         parsed_line = list(regex.findall(line)[0])
         # print parsed_line
         parsed_line[1] = str_to_date(parsed_line[1])
-        parsed_line.append(parsed_line[2].split()[0])
+        if 'windows' in parsed_line[6].lower():
+            os = 'windows'
+        elif 'linux' in parsed_line[6].lower():
+            os = 'linux'
+        elif 'macintosh' in parsed_line[6].lower():
+            os = 'macintosh'
+        else:
+            os = 'Other'
+        try:
+            http_method = parsed_line[2].split()[0]
+        except:
+            http_method = 'UNKNOWN'
+        parsed_line.append(http_method)
+        parsed_line.append(os)
     except:
         logger.error('Error while processing line:' + str(sys.exc_info()[1]))
         print line

@@ -31,7 +31,7 @@ class workerPool:
         self.pool.close()
 
 log_file = '/Users/okezie/Documents/projects/python/logparser/accesslog_aggregate.log'
-log_file = '/Users/okezie/Documents/projects/python/logparser/tests/files/sample_log_file.log'
+# log_file = '/Users/okezie/Documents/projects/python/logparser/tests/files/sample_log_file.log'
 # for line in log_file:
 #     parse(line)
 
@@ -42,13 +42,30 @@ def stream_file(file_path):
     for line in open(file_path):
         yield line
 
-def update_counters(entries, aggregator):
+def update_counters(entries):
     df = pd.DataFrame(entries)
-    print df[:100]
+    del entries
     return df
 
-def get_stats(aggregator):
-    return aggregator.groupby('date')
+def print_stats(aggregator):
+    by_date = aggregator.groupby('date')
+    by_date_useragent = aggregator.groupby(['user_agent','date'])
+    by_httpmethod_by_OS_by_day = aggregator.groupby(['user_agent','os','date'])
+    total_requests_by_date = by_date['http_method'].count()
+    frequent_useragents_by_date = by_date_useragent['user_agent'].count().to_dict().items()
+    # x = by_httpmethod_by_OS_by_day.count()
+    # print x.add_suffix('_Count').reset_index()
+    print "=========== Total Requests by date ============="
+    print total_requests_by_date.to_string()
+
+    print "=========== Top 3 Requests by User agent by Date ============="
+    top_3 =  sorted(frequent_useragents_by_date, key=lambda tup: tup[1], reverse=True)[:3]
+    print 'Frequency\t\tDate\t\tUseragent'
+    for user_agent_date,frequency in top_3:
+        user_agent, date = user_agent_date
+        print '{}\t\t\t{}\t\t\t{}'.format(frequency,date, user_agent)
+    print '=' * 40
+
 
 
 
@@ -66,9 +83,9 @@ def main():
                     # update_counters(entries, aggregator)
                     lines_to_process = []
             entries.extend(pool.map(parse_nginx_log, lines_to_process))
-            print entries
-            aggregator = update_counters(entries, aggregator)
-            print get_stats(aggregator)
+            # print entries
+            aggregator = update_counters(entries)
+            print print_stats(aggregator)
             del lines_to_process
 
 
