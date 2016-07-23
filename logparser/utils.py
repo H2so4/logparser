@@ -31,7 +31,6 @@ def parse_nginx_log(line):
             'os'
         ]
         parsed_line = list(regex.findall(line)[0])
-        # print parsed_line
         parsed_line[1] = str_to_date(parsed_line[1])
         if 'windows' in parsed_line[6].lower():
             os = 'windows'
@@ -48,6 +47,5 @@ def parse_nginx_log(line):
         parsed_line.append(http_method)
         parsed_line.append(os)
     except:
-        logger.error('Error while processing line:' + str(sys.exc_info()[1]))
-        print line
+        logger.error('Error while processing line:' + str(sys.exc_info()[1]) + line)
     return dict(zip(column_names,parsed_line))

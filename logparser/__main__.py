@@ -31,23 +31,22 @@ class workerPool:
 chunk_size = 200000
 process_count = 200
 
-def stream_file(file_path):
-    for line in open(file_path):
-        yield line
-
-def update_counters(entries):
+def convert_to_dataframe(entries):
     df = pd.DataFrame(entries)
     del entries
     return df
 
-def print_stats(aggregator):
-    by_date = aggregator.groupby('date')
-    by_date_useragent = aggregator.groupby(['user_agent','date'])
-    by_httpmethod_by_OS_by_day = aggregator.groupby(['user_agent','os','date'])
+def print_stats(log_df):
+    '''
+    Perform groupby operations on the pandas dataframe and print stats to stdout
+    :param log_df:
+    :return None:
+    '''
+    by_date = log_df.groupby('date')
+    by_date_useragent = log_df.groupby(['user_agent','date'])
+    by_httpmethod_by_OS_by_day = log_df.groupby(['user_agent','os','date'])
     total_requests_by_date = by_date['http_method'].count()
     frequent_useragents_by_date = by_date_useragent['user_agent'].count().to_dict().items()
-    # x = by_httpmethod_by_OS_by_day.count()
-    # print x.add_suffix('_Count').reset_index()
     print "=========== Total Requests by date ============="
     print total_requests_by_date.to_string()
 
@@ -67,23 +66,25 @@ def main(arguments):
         with workerPool(process_count) as pool:
             lines_to_process = []
             entries = []
+
             for i,line in enumerate(fd):
                 lines_to_process.append(line)
                 if len(lines_to_process) == chunk_size:
                     entries = pool.map(parse_nginx_log, lines_to_process)
                     lines_to_process = []
+
             entries.extend(pool.map(parse_nginx_log, lines_to_process))
-            aggregator = update_counters(entries)
-            print entries
-            print_stats(aggregator)
             del lines_to_process
+            log_df = convert_to_dataframe(entries)
+            print_stats(log_df)
 
 def get_opts():
     arguments = docopt(opts, version='Logparser 1.0')
     main(arguments)
 
 if __name__ == '__main__':
-    main()
+    arguments = docopt(opts, version='Logparser 1.0')
+    main(arguments)
 
 
 
