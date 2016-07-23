@@ -16,7 +16,12 @@ config = {
                          ],
     'packages': ['logparser'],
     'scripts': [],
-    'name': 'logparser'
+    'name': 'logparser',
+    'entry_points': {
+              'console_scripts': [
+                  'logparser = logparser.__main__:get_opts',
+              ],
+          }
 }
 
 setup(**config)
