@@ -74,6 +74,7 @@ def main(arguments):
                     lines_to_process = []
             entries.extend(pool.map(parse_nginx_log, lines_to_process))
             aggregator = update_counters(entries)
+            print entries
             print_stats(aggregator)
             del lines_to_process
 
